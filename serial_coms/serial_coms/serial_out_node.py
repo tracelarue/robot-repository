@@ -25,7 +25,7 @@ class SerialOut(Node):
         )
         # Send the data via the serial port
         self.serial_port.write(data_str.encode('utf-8'))
-        time.sleep(0.05)
+        time.sleep(0.1)
         # Optionally read the fake response from the fake serial port.
         response = self.serial_port.readline().decode('utf-8')
         self.get_logger().info(f"Response: {response.strip()}")
