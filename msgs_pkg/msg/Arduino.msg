@@ -1,0 +1,4 @@
+std_msgs/Float64 left_motor_speed
+std_msgs/Float64 right_motor_speed
+std_msgs/String left_motor_direction
+std_msgs/String right_motor_direction
