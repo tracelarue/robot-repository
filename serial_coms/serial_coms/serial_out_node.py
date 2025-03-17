@@ -10,7 +10,7 @@ class SerialOut(Node):
     def __init__(self):
         super().__init__('serial_out_node')
         # Identify and set the appropriate serial port and baud rate.
-        portID = '/dev/ttyACM0'
+        portID = '/dev/ttyUSB0'
         self.serial_port = FakeSerial(portID, 115200, timeout=1)
         # create subscription to the keyboard_control_topic
         self.subscription = self.create_subscription(Arduino, 'keyboard_control_topic', self.serial_output, 1)
