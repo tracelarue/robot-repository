@@ -1,8 +1,8 @@
 import rclpy
 from rclpy.node import Node
 import time
-#from serial import Serial  # comment out the real serial import
-from .fake_serial import FakeSerial  # # Use FakeSerial for testing if no real port is available.
+from serial import Serial  # comment out the real serial import
+#from .fake_serial import FakeSerial  # # Use FakeSerial for testing if no real port is available.
 from std_msgs.msg import Float64
 from msgs_pkg.msg import Arduino  # see [`msgs_pkg.msg.Arduino`](src/msgs_pkg/msg/Arduino.msg)
 
@@ -11,9 +11,9 @@ class SerialOut(Node):
         super().__init__('serial_out_node')
         # Identify and set the appropriate serial port and baud rate.
         portID = '/dev/ttyUSB0'
-        self.serial_port = FakeSerial(portID, 115200, timeout=1)
+        self.serial_port = Serial(portID, 115200, timeout=1)
         # create subscription to the keyboard_control_topic
-        self.subscription = self.create_subscription(Arduino, 'keyboard_control_topic', self.serial_output, 1)
+        self.subscription = self.create_subscription(Arduino, 'terminal_ctrl_topic', self.serial_output, 1)
 
     def serial_output(self, msg: Arduino):
         # Convert the message to a string.
@@ -25,7 +25,7 @@ class SerialOut(Node):
         )
         # Send the data via the serial port
         self.serial_port.write(data_str.encode('utf-8'))
-        time.sleep(0.1)
+        time.sleep(0.05)
         # Optionally read the fake response from the fake serial port.
         response = self.serial_port.readline().decode('utf-8')
         self.get_logger().info(f"Response: {response.strip()}")
