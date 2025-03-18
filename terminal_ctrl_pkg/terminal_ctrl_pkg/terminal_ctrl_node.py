@@ -27,9 +27,11 @@ class TerminalControl(Node):
     def check_keyboard(self):
         left_motor_speed = 0.0
         right_motor_speed = 0.0
-        left_motor_direction = 0
+        turn_speed = 60.0
+        left_motor_direction = 0  # 0 for forward, 1 for backward
         right_motor_direction = 0
-        left_multiplier = 0.7
+        left_multiplier = .95
+        speed = 250.0
         
         current_time = self.get_clock().now().to_msg().sec + self.get_clock().now().to_msg().nanosec/1e9
 
@@ -49,28 +51,28 @@ class TerminalControl(Node):
             
             if key.lower() == 'w':
                 self.get_logger().info('forward')
-                left_motor_speed = 100.0 * left_multiplier
-                right_motor_speed = 100.0
-                left_motor_direction = 1
-                right_motor_direction = 1
+                left_motor_speed = speed * left_multiplier
+                right_motor_speed = speed
+                left_motor_direction = 0
+                right_motor_direction = 0
             elif key.lower() == 's':
                 self.get_logger().info('backward')
-                left_motor_speed = 100.0 * left_multiplier
-                right_motor_speed = 100.0
+                left_motor_speed = speed * left_multiplier
+                right_motor_speed = speed
                 left_motor_direction = 1
                 right_motor_direction = 1
             elif key.lower() == 'a':
                 self.get_logger().info('left')
-                left_motor_speed = 100.0 * left_multiplier
-                right_motor_speed = 100.0
-                left_motor_direction = 1
+                left_motor_speed = turn_speed * left_multiplier
+                right_motor_speed = turn_speed
+                left_motor_direction = 0
                 right_motor_direction = 1
             elif key.lower() == 'd':
                 self.get_logger().info('right')
-                left_motor_speed = 100.0 * left_multiplier
-                right_motor_speed = 100.0
+                left_motor_speed = turn_speed * left_multiplier
+                right_motor_speed = turn_speed
                 left_motor_direction = 1
-                right_motor_direction = 1
+                right_motor_direction = 0
             elif key.lower() == ' ':  # Space to stop
                 self.get_logger().info('stop')
                 self.last_key = None  # Clear the key when explicitly stopping
