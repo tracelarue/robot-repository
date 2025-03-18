@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'serial_coms'
+package_name = 'serial_comms_pkg'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'serial_out_node = serial_coms.serial_out_node:main',
+            'serial_out_node = serial_comms_pkg.serial_out_node:main',
         ],
     },
 )
