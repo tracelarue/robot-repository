@@ -29,6 +29,20 @@ def generate_launch_description():
         parameters=[params]
     )
 
+    # Create RViz2 node with default configuration
+    default_rviz_config_path = os.path.join(pkg_path, 'rviz', 'default.rviz')
+    
+    # Check if the rviz config file exists, otherwise use empty config
+    rviz_config_file = default_rviz_config_path if os.path.exists(default_rviz_config_path) else ''
+    
+    node_rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        arguments=['-d', rviz_config_file] if rviz_config_file else [],
+        parameters=[{'use_sim_time': use_sim_time}]
+    )
 
     # Launch!
     return LaunchDescription([
@@ -37,5 +51,6 @@ def generate_launch_description():
             default_value='false',
             description='Use sim time if true'),
 
-        node_robot_state_publisher
+        node_robot_state_publisher,
+        node_rviz2
     ])
