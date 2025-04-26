@@ -51,7 +51,6 @@ def generate_launch_description():
             '-x','0','-y','0','-z','0',
             '-reference_frame','world'
         ],
-        output='screen'
     )
 
     # these use the normal spawner (it will load→configure for you)
