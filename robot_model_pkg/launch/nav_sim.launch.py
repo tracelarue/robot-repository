@@ -8,7 +8,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
 
     package_name='robot_model_pkg' #<--- CHANGE ME
-    map_file=os.path.join(get_package_share_directory(package_name),'maps','my_map.yaml')
+    map_file=os.path.join(get_package_share_directory(package_name),'maps','my_map_save.yaml')
 
     sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

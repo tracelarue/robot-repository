@@ -8,12 +8,15 @@ from launch_ros.actions import Node
 def generate_launch_description():
 
     package_name='robot_model_pkg' #<--- CHANGE ME
-    map_file=os.path.join(get_package_share_directory(package_name),'maps','my_map.yaml')
+    map_file=os.path.join(get_package_share_directory(package_name),'maps','upstairs_map_save.yaml')
 
-    robot = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory(package_name),'launch','robot.launch.py')]), 
+    map_server = Node(
+        package='nav2_map_server',
+        executable='map_server',
+        name='map_server',
+        parameters=[{'yaml_filename': map_file}],
     )
+
 
     nav2 = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -25,9 +28,14 @@ def generate_launch_description():
             'map': map_file,
             'map_subscribe_transient_local': 'true'
         }.items()
+    )    
+    
+    robot = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory(package_name),'launch','robot.launch.py')]), 
     )
 
     return LaunchDescription([
-        robot,
-        nav2
+        map_server,
+        nav2,
+        robot
     ])
