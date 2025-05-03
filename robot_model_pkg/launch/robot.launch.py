@@ -50,7 +50,6 @@ def generate_launch_description():
         )
     )
 
-
     joint_broad_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -67,7 +66,7 @@ def generate_launch_description():
     twist_mux = Node(
         package="twist_mux",
         executable="twist_mux",
-        parameters=[twist_mux_params, {'use_sim_time': True}],
+        parameters=[twist_mux_params, {'use_sim_time': False}],
         remappings=[('/cmd_vel_out','/diff_cont/cmd_vel_unstamped')]
     )
 
@@ -75,6 +74,34 @@ def generate_launch_description():
     ld19_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('ldlidar_stl_ros2'),'launch','ld19.launch.py')])
     )
+
+    tof_pointcloud = Node(
+        package='arducam_rclpy_tof_pointcloud',
+        executable='tof_pointcloud',
+        name='tof_pointcloud',
+        output='screen',
+        # No arguments to avoid issues with argument parsing
+        parameters=[{
+            'frame_id': 'depth_camera_link_optical'
+        }]
+    )
+
+    v4l2_camera_node = Node(
+        package='v4l2_camera',
+        executable='v4l2_camera_node',
+        name='v4l2_camera',
+        output='screen',
+        parameters=[{
+            'video_device': '/dev/video8',          # Adjust as needed
+            'camera_frame_id': 'camera_link_optical',
+            'pixel_format': 'YUYV',                 # Common format
+            'image_width': 1280,
+            'image_height': 480,
+            'framerate': 30.0,
+        }]
+    )
+
+    
 
     # Launch them all!
     return LaunchDescription([
@@ -84,4 +111,6 @@ def generate_launch_description():
         delayed_joint_broad_spawner,
         twist_mux,
         ld19_launch,
+        tof_pointcloud,
+        v4l2_camera_node,
     ])
