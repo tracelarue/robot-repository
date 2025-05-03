@@ -2,9 +2,9 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
     <joint name="depth_camera_joint" type="fixed">
-        <parent link="chassis"/>
+        <parent link="risers_link"/>
         <child link="depth_camera_link"/>
-        <origin xyz="0.195 -0.019 0.099" rpy="0 0 0"/>
+        <origin xyz="0.115 -0.019 0.069" rpy="0 0 0"/>
     </joint>
 
     <link name="depth_camera_link">

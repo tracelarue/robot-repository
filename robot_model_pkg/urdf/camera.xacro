@@ -2,9 +2,9 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
     <joint name="camera_joint" type="fixed">
-        <parent link="chassis"/>
+        <parent link="risers_link"/>
         <child link="camera_link"/>
-        <origin xyz="0.215 0.019 0.099" rpy="0 0 0"/>
+        <origin xyz="0.115 0.019 0.069" rpy="0 0 0"/>
     </joint>
 
     <link name="camera_link">
@@ -36,7 +36,7 @@
                 <horizontal_fov>1.089</horizontal_fov>
                 <image>
                     <format>R8G8B8</format>
-                    <width>640</width>
+                    <width>1280</width>
                     <height>480</height>
                 </image>
                 <clip>
