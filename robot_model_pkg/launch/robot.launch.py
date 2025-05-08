@@ -95,7 +95,7 @@ def generate_launch_description():
             'video_device': '/dev/video8',          # Adjust as needed
             'camera_frame_id': 'camera_link_optical',
             'pixel_format': 'YUYV',                 # Common format
-            'image_size': '[1280, 480]',               # Adjust as needed
+            'image_size': [1280, 480],               # Adjust as needed
             'framerate': 30.0,
         }]
     )

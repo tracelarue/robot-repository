@@ -23,7 +23,8 @@ if not API_KEY:
 WS_URL = 'wss://api.openai.com/v1/realtime?model=gpt-4o-mini-realtime-preview'
 
 CHUNK_SIZE = 1024
-RATE = 24000
+MIC_RATE = 48000  # Update to a supported sample rate
+SPEAKER_RATE = 48000 # Update to a supported sample rate
 FORMAT = pyaudio.paInt16
 
 audio_buffer = bytearray()
@@ -81,7 +82,7 @@ def send_mic_audio_to_websocket(ws):
 def speaker_callback(in_data, frame_count, time_info, status):
     global audio_buffer, mic_on_at
 
-    bytes_needed = frame_count * 2
+    bytes_needed = frame_count * 2  # 2 channels * 2 bytes per sample
     current_buffer_size = len(audio_buffer)
 
     if current_buffer_size >= bytes_needed:
@@ -92,7 +93,13 @@ def speaker_callback(in_data, frame_count, time_info, status):
         audio_chunk = bytes(audio_buffer) + b'\x00' * (bytes_needed - current_buffer_size)
         audio_buffer.clear()
 
-    return (audio_chunk, pyaudio.paContinue)
+    # Duplicate mono audio to stereo
+    if len(audio_chunk) % 4 == 0:  # Ensure it's divisible by 4 (2 channels * 2 bytes)
+        stereo_chunk = b''.join([audio_chunk[i:i+2] * 2 for i in range(0, len(audio_chunk), 2)])
+    else:
+        stereo_chunk = audio_chunk
+
+    return (stereo_chunk, pyaudio.paContinue)
 
 
 # Function to receive audio data from the WebSocket and process events
@@ -110,7 +117,7 @@ def receive_audio_from_websocket(ws):
                 # Now handle valid JSON messages only
                 message = json.loads(message)
                 event_type = message['type']
-                #print(f'⚡️ Received WebSocket event: {event_type}')
+                print(f'⚡️ Received WebSocket event: {event_type}')
 
                 if event_type == 'session.created':
                     send_fc_session_update(ws)
@@ -118,7 +125,7 @@ def receive_audio_from_websocket(ws):
                 elif event_type == 'response.audio.delta':
                     audio_content = base64.b64decode(message['delta'])
                     audio_buffer.extend(audio_content)
-                    #print(f'🔵 Received {len(audio_content)} bytes, total buffer size: {len(audio_buffer)}')
+                    print(f'🔵 Received {len(audio_content)} bytes, total buffer size: {len(audio_buffer)}')
 
                 elif event_type == 'input_audio_buffer.speech_started':
                     print('🔵 Speech started, clearing buffer and stopping playback.')
@@ -131,6 +138,8 @@ def receive_audio_from_websocket(ws):
                 elif event_type == 'response.function_call_arguments.done':
                     handle_function_call(message,ws)
 
+                elif event_type == 'error':
+                    print(f"⚠️ WebSocket error: {message}")
 
             except Exception as e:
                 print(f'Error receiving audio: {e}')
@@ -210,7 +219,7 @@ def send_fc_session_update(ws):
             ),
             "turn_detection": {
                 "type": "server_vad",
-                "threshold": 0.5,
+                "threshold": 0.1,
                 "prefix_padding_ms": 300,
                 "silence_duration_ms": 500
             },
@@ -302,7 +311,6 @@ def connect_to_openai():
         )
         print('Connected to OpenAI WebSocket.')
 
-
         # Start the recv and send threads
         receive_thread = threading.Thread(target=receive_audio_from_websocket, args=(ws,))
         receive_thread.start()
@@ -324,6 +332,9 @@ def connect_to_openai():
         print('WebSocket closed and threads terminated.')
     except Exception as e:
         print(f'Failed to connect to OpenAI: {e}')
+        print('Retrying connection in 5 seconds...')
+        time.sleep(5)
+        connect_to_openai()  # Retry connection
     finally:
         if ws is not None:
             try:
@@ -333,6 +344,7 @@ def connect_to_openai():
                 print(f'Error closing WebSocket connection: {e}')
 
 
+
 # Main function to start audio streams and connect to OpenAI
 def main(args=None):
     rclpy.init(args=args)
@@ -340,19 +352,53 @@ def main(args=None):
     node.get_logger().info('Starting OpenAI realtime node…')
 
     p = pyaudio.PyAudio()
+
+    # List available audio devices
+    print("Available audio devices:")
+    mic_device_index = None
+    speaker_device_index = None
+
+    for i in range(p.get_device_count()):
+        device_info = p.get_device_info_by_index(i)
+        print(f"Device {i}: {device_info['name']} (Input Channels: {device_info['maxInputChannels']}, Output Channels: {device_info['maxOutputChannels']})")
+
+        # Automatically select the correct microphone (card 2, device 0)
+        if "usb microphone" in device_info['name'].lower() and device_info['maxInputChannels'] > 0:
+            mic_device_index = i
+
+        # Automatically select the correct speaker (card 3, device 0)
+        if "uacdemov1.0" in device_info['name'].lower() and device_info['maxOutputChannels'] > 0:
+            speaker_device_index = i
+
+    if mic_device_index is None:
+        print("Error: Could not find the USB microphone.")
+        return
+
+    if speaker_device_index is None:
+        print("Error: Could not find the USB speaker.")
+        return
+
+    print(f"Using microphone: Device {mic_device_index}")
+    print(f"Using speaker: Device {speaker_device_index}")
+
+    # Open microphone stream
     mic_stream = p.open(
         format=FORMAT,
         channels=1,
-        rate=RATE,
+        rate=MIC_RATE,
         input=True,
+        input_device_index=mic_device_index,  # Use the selected microphone
         stream_callback=mic_callback,
         frames_per_buffer=CHUNK_SIZE
     )
+
+    # Open speaker stream
     speaker_stream = p.open(
         format=FORMAT,
-        channels=1,
-        rate=RATE,
+        channels=2,
+        rate=SPEAKER_RATE,
         output=True,
+        output_device_index=speaker_device_index,  # Use the selected speaker
         stream_callback=speaker_callback,
         frames_per_buffer=CHUNK_SIZE
     )

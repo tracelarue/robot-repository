@@ -6,7 +6,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     
-    map_file = os.path.join(get_package_share_directory('robot_model_pkg'),'maps', 'upstairs_map_save.yaml')
+    map_file = os.path.join(get_package_share_directory('robot_model_pkg'),'maps', 'downstairs_save.yaml')
     
     
     
