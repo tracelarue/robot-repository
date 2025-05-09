@@ -23,7 +23,6 @@ def generate_launch_description():
         }.items()
     )  
 
-
     return LaunchDescription([
         robot,
         nav2
