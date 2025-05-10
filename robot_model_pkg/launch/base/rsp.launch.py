@@ -32,7 +32,7 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d', '/robot/robot.rviz'],
+        arguments=['-d', '/home/trace/robot/sim.rviz'], #full path to your rviz config
         parameters=[{'use_sim_time': use_sim_time}]
     )
     
