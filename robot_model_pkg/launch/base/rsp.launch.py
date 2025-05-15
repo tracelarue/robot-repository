@@ -25,15 +25,15 @@ def generate_launch_description():
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        parameters=[params]
+        parameters=[params],
     )
     
     node_rviz2 = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d', '/home/trace/robot/robot.rviz'], #full path to your rviz config
-        parameters=[{'use_sim_time': use_sim_time}]
+        arguments=['-d', '/home/trace/robot/sim.rviz'], #full path to your rviz config
+        parameters=[{'use_sim_time': use_sim_time}],
     )
     
     # Launch!

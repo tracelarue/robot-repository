@@ -1,7 +1,7 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, ExecuteProcess, TimerAction
+from launch.actions import IncludeLaunchDescription, ExecuteProcess, TimerAction, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from geometry_msgs.msg import PoseWithCovarianceStamped
@@ -41,9 +41,21 @@ def generate_launch_description():
         }.items()
     )
 
+    gemini = Node(
+        package='gemini',
+        executable='multimodal',
+        name='gemini_multimodal',
+        output='screen',
+        parameters=[{'use_sim_time': True}],
+        emulate_tty=True
+    )
+
 
     return LaunchDescription([
+        SetEnvironmentVariable('QT_AUTO_SCREEN_SCALE_FACTOR', '0'),
+        SetEnvironmentVariable('QT_SCALE_FACTOR', '1'),
         sim,
         nav2,
         localization,
+        gemini,
     ])
