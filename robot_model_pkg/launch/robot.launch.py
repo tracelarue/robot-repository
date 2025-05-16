@@ -101,14 +101,7 @@ def generate_launch_description():
         }]
     )
 
-    gemini = Node(
-        package='gemini',
-        executable='multimodal_robot',
-        name='gemini_multimodal',
-        output='screen',
-        parameters=[{'use_sim_time': False}],
-        emulate_tty=True
-    )
+
 
     # Launch them all!
     return LaunchDescription([
@@ -120,5 +113,5 @@ def generate_launch_description():
         ld19_launch,
         tof_pointcloud,
         v4l2_camera_node,
-        gemini
+
     ])

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'arducam_rclpy_tof_pointcloud'
+package_name = 'depth_cam'
 
 setup(
     name=package_name,
@@ -29,7 +29,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tof_pointcloud = ' + package_name + '.tof_pointcloud:main',
+            'tof_pointcloud = depth_cam.tof_pointcloud:main',
+            'depth_field = depth_cam.depth_field:main',
         ],
     },
 )

@@ -38,8 +38,18 @@ def generate_launch_description():
         }.items()
     )
 
+    gemini = Node(
+    package='gemini',
+    executable='multimodal_robot',
+    name='gemini_multimodal',
+    output='screen',
+    parameters=[{'use_sim_time': False}],
+    emulate_tty=True
+    )
+
     return LaunchDescription([
         robot,
         nav2,
         localization,
+        gemini
     ])

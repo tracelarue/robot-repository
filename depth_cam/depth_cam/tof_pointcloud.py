@@ -76,7 +76,7 @@ class TOFPublisher(Node):
         if info.device_type == DeviceType.HQVGA:
             self.width_ = info.width
             self.height_ = info.height
-            tof.setControl(Control.RANGE, 4)
+            tof.setControl(Control.RANGE, 2)
         elif info.device_type == DeviceType.VGA:
             self.width_ = info.width
             self.height_ = info.height // 10 - 1
