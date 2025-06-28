@@ -375,7 +375,7 @@ class MultiModalGeminiNode(Node):
                             print("🔇 Microphone muted while audio is playing")
                         
                         # Add a delay to ensure the mic is fully muted before audio starts
-                        await asyncio.sleep(0.5)  # Reduced from 1.0 to 0.5 for better responsiveness
+                        await asyncio.sleep(1)  # Reduced from 1.0 to 0.5 for better responsiveness
                     
                     try:
                         # Resample from API output rate to speaker rate
@@ -391,7 +391,7 @@ class MultiModalGeminiNode(Node):
                     # Check if the queue is empty (reached end of audio)
                     if self.audio_in_queue.qsize() == 0:
                         # Wait briefly to make sure no more chunks are coming
-                        await asyncio.sleep(0.5)  # Reduced from 1.5 to 0.5 for better responsiveness
+                        await asyncio.sleep(1)  # Reduced from 1.5 to 0.5 for better responsiveness
                         if self.audio_in_queue.qsize() == 0:
                             # No more audio chunks, re-enable microphone
                             async with self.mic_lock:

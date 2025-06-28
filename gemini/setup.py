@@ -24,7 +24,7 @@ setup(
     entry_points={
         'console_scripts': [
             'text_to_text = gemini.text_to_text:main',
-            'multimodal = gemini.MultiModal:main',
+            'multimodal = gemini.MultiModal_image_as_tool:main',
             'multimodal_robot = gemini.MultiModal_robot:main'
         ],
     },

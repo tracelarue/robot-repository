@@ -23,21 +23,41 @@ import logging
 from google import genai
 from google.genai import types
 from google.genai.types import RealtimeInputConfig, ActivityHandling
-
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
 from nav2_msgs.action import NavigateToPose
 from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 import math
+import numpy as np
+from scipy import signal
 
-# Audio constants
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-SEND_SAMPLE_RATE = 16000
-RECEIVE_SAMPLE_RATE = 24000
-CHUNK_SIZE = 4096
-RECEIVED_AUDIO_BUFFER = 11520
+# Audio resampling functions
+def resample_audio(audio_data, original_rate, target_rate):
+    """Resample audio data from original_rate to target_rate"""
+    if original_rate == target_rate:
+        return audio_data
+    else:       
+    # Convert bytes to numpy array
+        audio_array = np.frombuffer(audio_data, dtype=np.int16)
+        
+
+        # Calculate resampling ratio
+        ratio = target_rate / original_rate
+        
+        # Calculate new length
+        new_length = int(len(audio_array) * ratio)
+        
+        # Resample the audio
+        resampled = signal.resample(audio_array, new_length)
+        
+        # Convert back to int16
+        resampled = resampled.astype(np.int16)
+        
+        # Convert back to bytes
+        return resampled.tobytes()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levellevel)s - %(message)s')
@@ -45,7 +65,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 # API configuration
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 MODEL = "models/gemini-2.0-flash-live-001"
-DEFAULT_MODE = "camera"
+VIDEO_MODE = "camera"
 
 client = genai.Client(
     http_options={"api_version": "v1beta"},
@@ -82,6 +102,7 @@ tools = [{'google_search': {}}, {'code_execution': {}}, {"function_declarations"
 # Gemini API configuration
 CONFIG = types.LiveConnectConfig(
     response_modalities=["AUDIO"],
+    media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW,
     context_window_compression=(
         types.ContextWindowCompressionConfig(
             sliding_window=types.SlidingWindow(),
@@ -95,20 +116,20 @@ CONFIG = types.LiveConnectConfig(
     system_instruction = types.Content(
         parts=[
             types.Part(
-                text="""Your name is Wilson.  
-                        You have a deep voice and talk quickly. 
-                        You can see and hear me, and I can see and hear you.
+                text="""Your name is Gemini.  
+                        You are too respond briefly and concisely. 
                         You can use the google search tool to find information on the internet.
-                        
                         You use ROS2 humble, ros2 control, nav2, and MoveIt to control yourself. 
                         You can use code execution to control yourself with ROS2 humble.
-
                         You can also navigate to specific locations in the house.
                         When asked to navigate somewhere, use the navigate_to_location tool.
                         Available locations:
-                        - kitchen (x=0.88, y=-3.45)
-                        - origin (x=0.0, y=0.0)
-                        - office (x=-3.9, y=-3.55)
+                        - kitchen (x=2.5, y=-5.94)
+                        - living room (x=1.6, y=0.0)
+                        - front door (x=-0.1, y=-7.94)
+                        - back door (x=0.0, y=-0.41)
+                        - dining room (x=0.1, y=-3.44)
+                        - restroom (x=3.2, y=-7.94)
                         """
             )
         ]
@@ -122,9 +143,38 @@ CONFIG = types.LiveConnectConfig(
 pya = pyaudio.PyAudio()
 
 class MultiModalGeminiNode(Node):
-    def __init__(self, video_mode=DEFAULT_MODE):
+    def __init__(self, mode, video_mode=VIDEO_MODE):
         super().__init__('MultiModalGeminiNode')
         self.video_mode = video_mode
+        self.mode = mode
+        
+
+        # Adjust audio and video constants based on the mode
+        self.format = pyaudio.paInt16
+        self.chunk_size = 11520
+        self.received_audio_buffer = 11520
+        if self.mode == "sim":
+            # Audio and Video constants
+            self.mic_channels = 1
+            self.speaker_channels = 1
+            mic_info = pya.get_default_input_device_info()
+            self.mic_index = mic_info['index']  # Using default microphone
+            self.mic_sample_rate = 16000  # Hardware sample rate for microphone
+            self.api_sample_rate = 16000  # Sample rate required by Gemini API
+            self.speaker_sample_rate = 24000  # Hardware sample rate for speakers
+            self.api_output_sample_rate = 24000  # Adjusted to match the actual API output rate
+            self.camera_index = 0  # Default camera index
+        if self.mode == "robot":
+            self.mic_channels = 1
+            self.speaker_channels = 2
+            self.mic_index = 2 # Using 2 for microphone
+            self.speaker_index = 1  # Using 1 for speakers
+            self.mic_sample_rate = 48000  # Hardware sample rate for microphone
+            self.api_sample_rate = 16000  # Sample rate required by Gemini API
+            self.speaker_sample_rate = 48000  # Hardware sample rate for speakers
+            self.api_output_sample_rate = 24000  # Adjusted to match the actual API output rate
+
+
         self.audio_in_queue = None
         self.out_queue = None
         self.session = None
@@ -138,20 +188,13 @@ class MultiModalGeminiNode(Node):
         
         # Logger setup
         self.logger = logging.getLogger('gemini_node')
-        
+        # Create subscription to camera topic if in camera mode
         # Create the action client for navigation
         self.nav_to_pose_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.wait_for_nav_server()
 
-    # Text input processing
-    async def send_text(self):
-        while True:
-            text = await asyncio.to_thread(input, "message > ")
-            if text.lower() == "q":
-                break
-            await self.session.send(input=text or ".", end_of_turn=True)
-
-    # Video frame capture
+    
+ # Video frame capture
     def _get_frame(self, cap):
         ret, frame = cap.read()
         if not ret:
@@ -212,6 +255,15 @@ class MultiModalGeminiNode(Node):
             print(f"🔴 Fatal error in send_realtime: {str(e)}")
             traceback.print_exc()
 
+
+    # Text input processing
+    async def send_text(self):
+        while True:
+            text = await asyncio.to_thread(input, "message > ")
+            if text.lower() == "q":
+                break
+            await self.session.send(input=text or ".", end_of_turn=True)
+            
     # Audio capture
     async def listen_audio(self):
         try:
@@ -220,14 +272,15 @@ class MultiModalGeminiNode(Node):
             mic_info = pya.get_default_input_device_info()
             print(f"🎤 Using microphone: {mic_info['name']}")
             
+            # Initialize microphone with hardware sample rate
             self.audio_stream = await asyncio.to_thread(
                 pya.open,
-                format=FORMAT,
-                channels=CHANNELS,
-                rate=SEND_SAMPLE_RATE,
+                format=self.format,
+                channels=self.mic_channels,
+                rate=self.mic_sample_rate,  # Use hardware sample rate (48kHz)
                 input=True,
-                input_device_index=mic_info["index"],
-                frames_per_buffer=CHUNK_SIZE,
+                input_device_index=self.mic_index,
+                frames_per_buffer=self.chunk_size,
             )
             print("🎤 Microphone initialized successfully")
             
@@ -241,14 +294,19 @@ class MultiModalGeminiNode(Node):
                     if mic_currently_active:
                         # Small sleep to prevent CPU overuse
                         await asyncio.sleep(0.01)
-                        data = await asyncio.to_thread(self.audio_stream.read, CHUNK_SIZE, exception_on_overflow=False)
-                        await self.out_queue.put({"data": data, "mime_type": "audio/pcm"})
-                        counter += 1
+                        # Read audio at hardware rate (48kHz)
+                        data = await asyncio.to_thread(self.audio_stream.read, self.chunk_size, exception_on_overflow=False)
+                        
+                        # Resample from hardware rate (48kHz) to API rate (16kHz)
+                        resampled_data = resample_audio(data, self.mic_sample_rate, self.api_sample_rate)
+                        
+                        # Send resampled data to API
+                        await self.out_queue.put({"data": resampled_data, "mime_type": "audio/pcm"})
                     else:
                         # When muted, don't let data accumulate in buffers
                         await asyncio.sleep(0.1)
                         # Read and discard data while muted to prevent buffer buildup
-                        await asyncio.to_thread(self.audio_stream.read, CHUNK_SIZE, exception_on_overflow=False)
+                        await asyncio.to_thread(self.audio_stream.read, self.chunk_size, exception_on_overflow=False)
                 except Exception as e:
                     print(f"🔴 Microphone error: {str(e)}")
                     await asyncio.sleep(0.1)
@@ -324,22 +382,38 @@ class MultiModalGeminiNode(Node):
             output_info = pya.get_default_output_device_info()
             print(f"🔊 Using speaker: {output_info['name']}")
             
+            output_device_index = self.speaker_index if hasattr(self, 'speaker_index') else None
             stream = await asyncio.to_thread(
                 pya.open,
-                format=FORMAT,
-                channels=CHANNELS,
-                rate=RECEIVE_SAMPLE_RATE,
+                format=self.format,
+                channels=self.speaker_channels,
+                rate=self.speaker_sample_rate,  # Use hardware sample rate (48kHz)
                 output=True,
-                frames_per_buffer=RECEIVED_AUDIO_BUFFER,
+                output_device_index=output_device_index,
+                frames_per_buffer=self.received_audio_buffer,
             )
             print("🔊 Audio output initialized successfully")
             
             audio_chunks_played = 0
             audio_playing = False
+            last_audio_time = asyncio.get_event_loop().time()
             
             while True:
                 try:
-                    bytestream = await self.audio_in_queue.get()
+                    # Add a timeout to detect stalled audio
+                    try:
+                        bytestream = await asyncio.wait_for(self.audio_in_queue.get(), timeout=5.0)
+                        last_audio_time = asyncio.get_event_loop().time()
+                    except asyncio.TimeoutError:
+                        # No audio for 5 seconds, check if we need to ensure mic is unmuted
+                        current_time = asyncio.get_event_loop().time()
+                        if audio_playing and (current_time - last_audio_time) > 3.0:
+                            print("⚠️ Audio timeout detected - resetting microphone state")
+                            async with self.mic_lock:
+                                self.mic_active = True
+                                audio_playing = False
+                                print("🎤 Microphone re-enabled after audio timeout")
+                        continue
                     
                     # If this is the first audio chunk in a sequence, mute the microphone
                     if not audio_playing:
@@ -349,15 +423,23 @@ class MultiModalGeminiNode(Node):
                             print("🔇 Microphone muted while audio is playing")
                         
                         # Add a delay to ensure the mic is fully muted before audio starts
-                        await asyncio.sleep(1)
+                        await asyncio.sleep(2)  # Reduced from 1.0 to 0.5 for better responsiveness
                     
-                    await asyncio.to_thread(stream.write, bytestream)
-                    audio_chunks_played += 1
+                    try:
+                        # Resample from API output rate to speaker rate
+                        resampled_output = resample_audio(bytestream, self.api_output_sample_rate, self.speaker_sample_rate)
+                        
+                        # Play the resampled audio
+                        await asyncio.to_thread(stream.write, resampled_output)
+                        audio_chunks_played += 1
+                    except Exception as audio_err:
+                        print(f"🔴 Audio playback error: {str(audio_err)}")
+                        # Continue to next chunk rather than breaking completely
                     
                     # Check if the queue is empty (reached end of audio)
                     if self.audio_in_queue.qsize() == 0:
                         # Wait briefly to make sure no more chunks are coming
-                        await asyncio.sleep(1.5)
+                        await asyncio.sleep(3)  # Reduced from 1.5 to 0.5 for better responsiveness
                         if self.audio_in_queue.qsize() == 0:
                             # No more audio chunks, re-enable microphone
                             async with self.mic_lock:
@@ -368,6 +450,7 @@ class MultiModalGeminiNode(Node):
                     
                 except Exception as e:
                     print(f"🔴 Audio output error: {str(e)}")
+                    traceback.print_exc()  # Add stack trace for better debugging
                     
                     # Re-enable microphone in case of error
                     async with self.mic_lock:
@@ -388,6 +471,7 @@ class MultiModalGeminiNode(Node):
             if 'stream' in locals() and stream:
                 stream.stop_stream()
                 stream.close()
+    
 
     # Navigation functions
     def wait_for_nav_server(self):
@@ -468,41 +552,6 @@ class MultiModalGeminiNode(Node):
                 return f"Failed to send navigation goal to {location}."
         else:
             return "Unknown tool."
-            
-    def print_audio_devices(self):
-        """Print information about audio devices for debugging"""
-        try:
-            print("\n===== AUDIO DEVICE INFO =====")
-            info = pya.get_host_api_info_by_index(0)
-            num_devices = info.get('deviceCount')
-            
-            input_devices = []
-            output_devices = []
-            
-            for i in range(num_devices):
-                device_info = pya.get_device_info_by_host_api_device_index(0, i)
-                if device_info.get('maxInputChannels') > 0:
-                    input_devices.append((i, device_info.get('name')))
-                if device_info.get('maxOutputChannels') > 0:
-                    output_devices.append((i, device_info.get('name')))
-            
-            print("Input devices:")
-            for idx, name in input_devices:
-                if idx == pya.get_default_input_device_info().get('index'):
-                    print(f" * {idx}: {name} (DEFAULT)")
-                else:
-                    print(f"   {idx}: {name}")
-                    
-            print("\nOutput devices:")
-            for idx, name in output_devices:
-                if idx == pya.get_default_output_device_info().get('index'):
-                    print(f" * {idx}: {name} (DEFAULT)")
-                else:
-                    print(f"   {idx}: {name}")
-                    
-            print("===== END AUDIO DEVICE INFO =====\n")
-        except Exception as e:
-            print(f"Error getting audio device info: {str(e)}")
 
     # Main session runner
     async def run_session(self):
@@ -530,7 +579,6 @@ class MultiModalGeminiNode(Node):
                         
                         send_text_task = asyncio.create_task(self.send_text())
                         tasks.append(send_text_task)
-                        
                         tasks.append(asyncio.create_task(self.send_realtime()))
                         tasks.append(asyncio.create_task(self.listen_audio()))
                         
@@ -573,8 +621,9 @@ class MultiModalGeminiNode(Node):
 
 def main(args=None):
     parser = argparse.ArgumentParser(description='MultiModal Gemini Node')
-    parser.add_argument('--video', choices=['none', 'camera', 'screen'], default=DEFAULT_MODE, 
+    parser.add_argument('--video', choices=['none', "camera", 'screen'], default=VIDEO_MODE, 
                         help='Video input mode (none, camera, or screen)')
+    parser.add_argument('--mode', choices=['robot','sim'], default='sim')
     parser.add_argument('--debug', action='store_true', help='Enable debug logging')
     parsed_args, remaining = parser.parse_known_args(args)
     
@@ -593,8 +642,39 @@ def main(args=None):
         return
     
     rclpy.init(args=remaining)
-    node = MultiModalGeminiNode(video_mode=parsed_args.video)
+    node = MultiModalGeminiNode(video_mode=parsed_args.video, mode=parsed_args.mode)
     
+    """Print information about audio devices for debugging"""
+    print("\n===== AUDIO DEVICE INFO =====")
+    info = pya.get_host_api_info_by_index(0)
+    num_devices = info.get('deviceCount')
+    
+    input_devices = []
+    output_devices = []
+    
+    for i in range(num_devices):
+        device_info = pya.get_device_info_by_host_api_device_index(0, i)
+        if device_info.get('maxInputChannels') > 0:
+            input_devices.append((i, device_info.get('name')))
+        if device_info.get('maxOutputChannels') > 0:
+            output_devices.append((i, device_info.get('name')))
+    
+    print("Input devices:")
+    for idx, name in input_devices:
+        if idx == pya.get_default_input_device_info().get('index'):
+            print(f" * {idx}: {name} (DEFAULT)")
+        else:
+            print(f"   {idx}: {name}")
+            
+    print("\nOutput devices:")
+    for idx, name in output_devices:
+        if idx == pya.get_default_output_device_info().get('index'):
+            print(f" * {idx}: {name} (DEFAULT)")
+        else:
+            print(f"   {idx}: {name}")
+            
+    print("===== END AUDIO DEVICE INFO =====\n")
+
     try:
         print(f"🎬 Starting node with video mode: {parsed_args.video}")
         asyncio.run(node.run_session())

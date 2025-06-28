@@ -76,7 +76,7 @@ def generate_launch_description():
     )
 
     tof_pointcloud = Node(
-        package='arducam_rclpy_tof_pointcloud',
+        package='depth_cam',
         executable='tof_pointcloud',
         name='tof_pointcloud',
         output='screen',

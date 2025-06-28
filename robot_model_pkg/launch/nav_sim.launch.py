@@ -37,7 +37,7 @@ def generate_launch_description():
             'use_sim_time': 'true',
             'autostart': 'true',
             'params_file': os.path.join(get_package_share_directory(package_name), 'config', 'nav2_params.yaml'),
-            'map': os.path.join(get_package_share_directory(package_name), 'maps', 'my_map_save.yaml')
+            'map': os.path.join(get_package_share_directory(package_name), 'maps', 'downstairs_sim.yaml')
         }.items()
     )
 
@@ -46,6 +46,7 @@ def generate_launch_description():
         executable='multimodal',
         name='gemini_multimodal',
         output='screen',
+        arguments=['--mode', 'sim'],  # Changed: removed extra --ros-args
         parameters=[{'use_sim_time': True}],
         emulate_tty=True
     )
@@ -57,5 +58,5 @@ def generate_launch_description():
         sim,
         nav2,
         localization,
-        gemini,
+        #gemini,
     ])

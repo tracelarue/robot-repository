@@ -31,6 +31,7 @@ setup(
         'console_scripts': [
             'tof_pointcloud = depth_cam.tof_pointcloud:main',
             'depth_field = depth_cam.depth_field:main',
+            'sim_depth = depth_cam.sim_depth:main',
         ],
     },
 )
