@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://wiki.ros.org/xacro" name="r6bot">
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="r4bot">
 
   <!-- Import r6bot macro -->
   <xacro:include filename="$(find arm)/description/urdf/r4bot_description.urdf.xacro"/>
@@ -9,7 +9,7 @@
 
   <xacro:arm/>
 
-  <!-- Import r6bot ros2_control description -->
+  <!-- Import r4bot ros2_control description -->
   <xacro:include filename="$(find arm)/description/urdf/r4bot.ros2_control.xacro" />
   <xacro:r4bot_ros2_control name="r4bot"/>
 

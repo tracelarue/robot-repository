@@ -57,8 +57,12 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: false
-        end_effector:
+        end_effector_frame:
           Value: true
+        end_effector_roll_virtual:
+          Value: false
+        end_effector_yaw_virtual:
+          Value: false
         gripper_base:
           Value: false
         gripper_left_finger:
@@ -88,8 +92,10 @@ Visualization Manager:
                 link_3:
                   link_4:
                     gripper_base:
-                      end_effector:
-                        {}
+                      end_effector_roll_virtual:
+                        end_effector_yaw_virtual:
+                          end_effector_frame:
+                            {}
                       gripper_left_finger:
                         {}
                       gripper_right_finger:
@@ -119,7 +125,15 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        end_effector:
+        end_effector_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        end_effector_roll_virtual:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        end_effector_yaw_virtual:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -216,25 +230,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.5607436895370483
+      Distance: 1.2960357666015625
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.11535472422838211
-        Y: 0.33282342553138733
-        Z: 0.4488869309425354
+        X: 0.042345013469457626
+        Y: 0.04887201264500618
+        Z: 0.2455071210861206
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6047974228858948
+      Pitch: 0.6247968673706055
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.6471665501594543
+      Yaw: 0.6021684408187866
     Saved: ~
 Window Geometry:
   Displays:

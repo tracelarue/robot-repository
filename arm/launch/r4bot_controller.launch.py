@@ -54,7 +54,7 @@ def generate_launch_description():
         [
             FindPackageShare("arm"),
             "config",
-            "r6bot_controller.yaml",
+            "r4bot_controller.yaml",
         ]
     )
     rviz_config_file = PathJoinSubstitution(
@@ -96,7 +96,13 @@ def generate_launch_description():
     robot_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_controller", "-c", "/controller_manager"],
+        arguments=["arm_group_controller", "-c", "/controller_manager"],
+    )
+
+    hand_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["hand_group_controller", "-c", "/controller_manager"],
     )
 
     # Delay rviz start after `joint_state_broadcaster`
@@ -120,6 +126,7 @@ def generate_launch_description():
         control_node,
         robot_state_pub_node,
         robot_controller_spawner,
+        hand_controller_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
         delay_joint_state_broadcaster_after_robot_controller_spawner,
     ]

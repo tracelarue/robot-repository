@@ -3,11 +3,11 @@ moveit_setup_assistant_config:
     package: arm
     relative_path: description/urdf/r4bot.urdf.xacro
   srdf:
-    relative_path: config/r6bot.srdf
+    relative_path: config/r4bot.srdf
   package_settings:
     author_name: Trace LaRue
     author_email: traceglarue@gmail.com
-    generated_timestamp: 1751074759
+    generated_timestamp: 1751778434
   control_xacro:
     command:
       - position
