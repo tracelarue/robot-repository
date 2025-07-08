@@ -2,7 +2,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, ExecuteProcess
+from launch.actions import IncludeLaunchDescription, ExecuteProcess, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 
@@ -17,6 +17,14 @@ def generate_launch_description():
         'worlds','downstairs_combined.world'
     )
 
+    # Launch Gazebo
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
+        launch_arguments={'world': world_file_path, 'extra_gazebo_args': '--ros-args --params-file ' + gazebo_params_file}.items()
+    )
+
+    # Launch robot state publisher
     rsp = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(
@@ -30,41 +38,61 @@ def generate_launch_description():
         }.items()
     )
 
-    gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            os.path.join(
-                get_package_share_directory('gazebo_ros'),
-                'launch','gazebo.launch.py'
+    # Spawn robot in Gazebo
+    spawn_entity = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        arguments=['-topic', 'robot_description', '-entity', 'my_bot'],
+        output='screen'
+    )
+
+    # Delay controller spawning to ensure robot is loaded first
+    diff_drive_controller = TimerAction(
+        period=2.0,
+        actions=[
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                arguments=["diff_cont"],
+                output="screen"
             )
-        ]),
-        launch_arguments={
-            'world': world_file_path,
-            'extra_gazebo_args': '--ros-args --params-file ' + gazebo_params_file
-        }.items()
+        ]
     )
 
-    spawn_robot = Node(
-        package='gazebo_ros', executable='spawn_entity.py',
-        arguments=[
-            '-topic','robot_description',
-            '-entity','my_bot',
-            '-x','0','-y','0','-z','0',
-            '-reference_frame','world'
-        ],
+    arm_group_controller = TimerAction(
+        period=3.0,
+        actions=[
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                arguments=["arm_group_controller"],
+                output="screen"
+            )
+        ]
     )
 
-    # these use the normal spawner (it will load→configure for you)
-    diff_drive_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["diff_cont"],
-        output="screen"
+    hand_group_controller = TimerAction(
+        period=4.0,
+        actions=[
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                arguments=["hand_group_controller"],
+                output="screen"
+            )
+        ]
     )
-    joint_broadcaster = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_broad"],
-        output="screen"
+
+    joint_broadcaster = TimerAction(
+        period=1.0,
+        actions=[
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                arguments=["joint_broad"],
+                output="screen"
+            )
+        ]
     )
 
     twist_mux_params = os.path.join(
@@ -79,10 +107,12 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        rsp,
         gazebo,
-        spawn_robot,
+        rsp,
+        spawn_entity,
+        joint_broadcaster,
         diff_drive_controller,
-        joint_broadcaster, 
+        arm_group_controller,
+        hand_group_controller, 
         twist_mux,
     ])
