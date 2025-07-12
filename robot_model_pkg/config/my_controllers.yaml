@@ -6,12 +6,6 @@ controller_manager:
     diff_cont:
       type: diff_drive_controller/DiffDriveController
 
-    arm_group_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
-
-    hand_group_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
-
     joint_broad:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -66,28 +60,3 @@ diff_cont:
     # angular.z.min_acceleration: NAN
     # angular.z.max_jerk: NAN
     # angular.z.min_jerk: NAN
-
-arm_group_controller:
-  ros__parameters:
-    joints:
-      - joint_1
-      - joint_2
-      - joint_3
-      - joint_4
-      #- end_effector_roll_virtual_joint
-      #- end_effector_yaw_virtual_joint
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
-hand_group_controller:
-  ros__parameters:
-    joints:
-      - gripper_left_finger_joint
-      - gripper_right_finger_joint
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
