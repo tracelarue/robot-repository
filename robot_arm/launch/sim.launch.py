@@ -38,6 +38,7 @@ def generate_launch_description():
             )
         ]),
         launch_arguments={
+            'use_sim_time': 'true',
             'world': world_file_path,
             'extra_gazebo_args': '--ros-args --params-file ' + gazebo_params_file
         }.items()
@@ -56,6 +57,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster"],
+        parameters=[{'use_sim_time': True}],
         output="screen"
     )
 
@@ -63,6 +65,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["diff_drive_controller"],
+        parameters=[{'use_sim_time': True}],
         output="screen"
     )
 
@@ -70,6 +73,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["arm_controller"],
+        parameters=[{'use_sim_time': True}],
         output="screen"
     )
 
@@ -77,6 +81,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["gripper_controller"],
+        parameters=[{'use_sim_time': True}],
         output="screen"
     )
 

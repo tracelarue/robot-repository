@@ -9,13 +9,13 @@
 
     <!-- Downstairs structure as a model -->
     <include>
-      <uri>file:///home/trace/robot/src/robot_model_pkg/worlds/downstairs_building</uri>
+      <uri>file:///home/trace/robot/src/robot_arm/worlds/downstairs_building</uri>
       <pose>-1 0 0 0 0 0</pose>
     </include>
 
     <!-- Downstairs furniture as a model -->
     <include>
-      <uri>file:///home/trace/robot/src/robot_model_pkg/worlds/downstairs_furniture</uri>
+      <uri>file:///home/trace/robot/src/robot_arm/worlds/downstairs_furniture</uri>
       <pose>-2 -.5 .1 0 0 0</pose>
     </include>
 

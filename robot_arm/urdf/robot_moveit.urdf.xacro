@@ -12,17 +12,7 @@
     <xacro:include filename="lidar.xacro" />
     <xacro:include filename="camera.xacro" />
     <xacro:include filename="depth_camera.xacro" />
-    <xacro:include filename="$(find robot_arm)/ros2_control/base_arm_system.ros2_control.xacro" />
 
-    <xacro:base_arm_system
-        name="base_arm_system" prefix="$(arg prefix)" use_sim_time="$(arg use_sim_time)"
-        use_fake_hardware="$(arg use_fake_hardware)"
-        fake_sensor_commands="$(arg fake_sensor_commands)"/>
 
-    <gazebo>
-        <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-        <parameters>$(find robot_arm)/config/gazebo_controller_manager.yaml</parameters>
-        </plugin>
-    </gazebo>
 
 </robot>

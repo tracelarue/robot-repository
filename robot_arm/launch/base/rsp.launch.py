@@ -24,7 +24,7 @@ def generate_launch_description():
     # Process the URDF file
     pkg_path = os.path.join(get_package_share_directory('robot_arm'))
     xacro_file = os.path.join(pkg_path,'urdf','robot.urdf.xacro')
-    robot_description_config = Command(['xacro ', xacro_file, ' use_sim:=', use_sim_time])
+    robot_description_config = Command(['xacro ', xacro_file, ' use_sim_time:=', use_sim_time])
     params = {'robot_description': robot_description_config, 'use_sim_time': use_sim_time}
     
     node_robot_state_publisher = Node(
@@ -46,7 +46,7 @@ def generate_launch_description():
     return LaunchDescription([
         set_rviz_log_level,
         DeclareLaunchArgument(
-            'use_sim',
+            'use_sim_time',
             default_value='false',
             description='Use sim time if true'),
         node_robot_state_publisher,
