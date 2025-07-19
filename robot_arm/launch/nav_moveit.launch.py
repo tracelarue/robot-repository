@@ -87,13 +87,13 @@ def generate_launch_description():
 
     # Add timer to start navigation after Gazebo is ready
     nav2_timer = TimerAction(
-        period=8.0,
+        period=10.0,
         actions=[nav2_launch]
     )
 
     # Add timer to start localization after Gazebo is ready
     localization_timer = TimerAction(
-        period=8.0,
+        period=10.0,
         actions=[localization_launch]
     )
 
