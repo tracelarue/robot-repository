@@ -5,6 +5,8 @@ log/
 
 # IDE files
 .vscode/
+.vscode/settings.json
+.vscode/c_cpp_properties.json
 *.swp
 *.swo
 
