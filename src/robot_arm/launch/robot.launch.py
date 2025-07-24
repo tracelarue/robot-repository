@@ -15,9 +15,9 @@ def generate_launch_description():
     # Include the robot_state_publisher launch file, provided by our own package. Force sim time to be enabled
     # !!! MAKE SURE YOU SET THE PACKAGE NAME CORRECTLY !!!
 
-    package_name='robot_model_pkg' #<--- CHANGE ME
+    package_name='robot_arm' #<--- CHANGE ME
     robot_description = Command(['ros2 param get --hide-type /robot_state_publisher robot_description'])
-    controller_params_file = os.path.join(get_package_share_directory(package_name), 'config', 'my_controllers.yaml')
+    controller_params_file = os.path.join(get_package_share_directory(package_name), 'config', 'gazebo_controller_manager.yaml')
 
     rsp = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
@@ -40,6 +40,42 @@ def generate_launch_description():
         actions=[controller_manager],
     )
 
+
+    diff_drive_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["diff_drive_controller"],
+    )
+    delayed_diff_drive_spawner = RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=controller_manager,
+            on_start=[diff_drive_spawner],
+        )
+    )
+
+    arm_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["arm_controller"],
+    )
+    delayed_arm_controller_spawner = RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=controller_manager,
+            on_start=[arm_controller_spawner],
+        )
+    )
+
+    gripper_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["gripper_controller"],
+    )
+    delayed_gripper_controller_spawner = RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=controller_manager,
+            on_start=[gripper_controller_spawner],
+        )
+    )
 
     diff_drive_spawner = Node(
         package="controller_manager",
@@ -111,6 +147,8 @@ def generate_launch_description():
         rsp,
         delayed_controller_manager,
         delayed_diff_drive_spawner,
+        delayed_arm_controller_spawner,
+        delayed_gripper_controller_spawner,
         delayed_joint_broad_spawner,
         twist_mux,
         ld19_launch,

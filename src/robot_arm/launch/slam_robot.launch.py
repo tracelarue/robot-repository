@@ -15,7 +15,7 @@ def generate_launch_description():
     # Include the robot_state_publisher launch file, provided by our own package. Force sim time to be enabled
     # !!! MAKE SURE YOU SET THE PACKAGE NAME CORRECTLY !!!
 
-    package_name='robot_model_pkg' #<--- CHANGE ME
+    package_name='robot_arm' #<--- CHANGE ME
     slam_params = os.path.join(get_package_share_directory(package_name),'config','raspi_mapper_params_online_async.yaml')
 
 

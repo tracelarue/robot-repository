@@ -4,18 +4,27 @@
 #define SERVO_BASE_PIN 8
 #define SERVO_SHOULDER_PIN 9
 #define SERVO_ELBOW_PIN 10
+// ========== WRIST JOINT ADDITION START ==========
+#define SERVO_WRIST_PIN 12
+// ========== WRIST JOINT ADDITION END ==========
 #define SERVO_GRIPPER_PIN 11
 
 // Define the start configuration of the joints
 #define BASE_START 90
 #define SHOULDER_START 90
 #define ELBOW_START 90
+// ========== WRIST JOINT ADDITION START ==========
+#define WRIST_START 90
+// ========== WRIST JOINT ADDITION END ==========
 #define GRIPPER_START 0
 
 // Register the servo motors of each joint
 Servo base;  
 Servo shoulder;  
 Servo elbow;  
+// ========== WRIST JOINT ADDITION START ==========
+Servo wrist;
+// ========== WRIST JOINT ADDITION END ==========
 Servo gripper; 
 
 uint8_t idx = 0;
@@ -49,6 +58,9 @@ void setup() {
   base.attach(SERVO_BASE_PIN);
   shoulder.attach(SERVO_SHOULDER_PIN);
   elbow.attach(SERVO_ELBOW_PIN);
+  // ========== WRIST JOINT ADDITION START ==========
+  wrist.attach(SERVO_WRIST_PIN);
+  // ========== WRIST JOINT ADDITION END ==========
   gripper.attach(SERVO_GRIPPER_PIN); 
 
   // Set a common start point for each joint
@@ -56,6 +68,9 @@ void setup() {
   base.write(BASE_START);
   shoulder.write(SHOULDER_START);
   elbow.write(ELBOW_START);
+  // ========== WRIST JOINT ADDITION START ==========
+  wrist.write(WRIST_START);
+  // ========== WRIST JOINT ADDITION END ==========
   gripper.write(GRIPPER_START);
 
   // Start the Serial communication with ROS
@@ -86,10 +101,18 @@ void loop() {
       idx = 2;
       val_idx = 0;
     }
+    // ========== WRIST JOINT ADDITION START ==========
+    // wrist motor
+    else if(chr == 'w')
+    {
+      idx = 3;
+      val_idx = 0;
+    }
+    // ========== WRIST JOINT ADDITION END ==========
     // gripper motor
     else if(chr == 'g')
     {
-      idx = 3;
+      idx = 4;  // ========== WRIST JOINT ADDITION: Changed from 3 to 4 ==========
       val_idx = 0;
     }
     // Separator
@@ -108,7 +131,13 @@ void loop() {
       {
         reach_goal(elbow, val);
       }
+      // ========== WRIST JOINT ADDITION START ==========
       else if(idx == 3)
+      {
+        reach_goal(wrist, val);
+      }
+      // ========== WRIST JOINT ADDITION END ==========
+      else if(idx == 4)  // ========== WRIST JOINT ADDITION: Changed from 3 to 4 ==========
       {
         reach_goal(gripper, val);
       }
@@ -117,7 +146,8 @@ void loop() {
       value[0] = '0';
       value[1] = '0';
       value[2] = '0';
-      value[3] = '\0';
+      value[3] = '0';
+      value[4] = '\0'; // ========== WRIST JOINT ADDITION: Added to accommodate 4 digits ==========
     }
     // Plain number
     else

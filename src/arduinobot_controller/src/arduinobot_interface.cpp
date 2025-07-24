@@ -102,9 +102,9 @@ CallbackReturn ArduinobotInterface::on_activate(const rclcpp_lifecycle::State &p
   RCLCPP_INFO(rclcpp::get_logger("ArduinobotInterface"), "Starting robot hardware ...");
 
   // Reset commands and states
-  position_commands_ = { 0.0, 0.0, 0.0, 0.0 };
-  prev_position_commands_ = { 0.0, 0.0, 0.0, 0.0 };
-  position_states_ = { 0.0, 0.0, 0.0, 0.0 };
+  position_commands_ = { 0.0, 0.0, 0.0, 0.0, 0.0 };  // ========== WRIST JOINT ADDITION: Added 5th joint ==========
+  prev_position_commands_ = { 0.0, 0.0, 0.0, 0.0, 0.0 };  // ========== WRIST JOINT ADDITION: Added 5th joint ==========
+  position_states_ = { 0.0, 0.0, 0.0, 0.0, 0.0 };  // ========== WRIST JOINT ADDITION: Added 5th joint ==========
 
   try
   {
@@ -179,7 +179,14 @@ hardware_interface::return_type ArduinobotInterface::write(const rclcpp::Time &t
   msg.append(compensateZeros(elbow));
   msg.append(std::to_string(elbow));
   msg.append(",");
-  int gripper = static_cast<int>(((-position_commands_.at(3)) * 180) / (M_PI / 2));
+  // ========== WRIST JOINT ADDITION START ==========
+  int wrist = static_cast<int>(((position_commands_.at(3) + (M_PI / 2)) * 180) / M_PI);
+  msg.append("w");
+  msg.append(compensateZeros(wrist));
+  msg.append(std::to_string(wrist));
+  msg.append(",");
+  // ========== WRIST JOINT ADDITION END ==========
+  int gripper = static_cast<int>(((-position_commands_.at(4)) * 180) / (M_PI / 2));  // ========== WRIST JOINT ADDITION: Changed from index 3 to 4 ==========
   msg.append("g");
   msg.append(compensateZeros(gripper));
   msg.append(std::to_string(gripper));
