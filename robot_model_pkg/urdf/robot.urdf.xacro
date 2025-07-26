@@ -6,16 +6,20 @@
     <xacro:arg name="use_fake_hardware" default="false"/>
 
     <xacro:include filename="robot_core.xacro" />
-    <xacro:include filename="robot_arm.xacro" />
-    <xacro:arm/>
     <xacro:include filename="lidar.xacro" />
     <xacro:include filename="camera.xacro" />
     <xacro:include filename="depth_camera.xacro" />
+    <xacro:if value="$(arg use_ros2_control)">
+        <xacro:include filename="ros2_control.xacro" />
+    </xacro:if>
+    <xacro:unless value="$(arg use_ros2_control)">
+        <xacro:include filename="gazebo_control.xacro" />
+    </xacro:unless>
 
 
     <gazebo>
         <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-        <parameters>$(find robot_model_pkg)/config/gazebo_controller_manager.yaml</parameters>
+        <parameters>$(find robot_model_pkg)/config/my_controllers.yaml</parameters>
         </plugin>
     </gazebo>
 
