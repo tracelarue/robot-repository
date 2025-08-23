@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="wilson">
+    <xacro:arg name="prefix" default="" />
+    <xacro:arg name="use_sim_time" default="false" />
+
+    <xacro:arg name="use_fake_hardware" default="false" />
+    <xacro:arg name="fake_sensor_commands" default="false" />
+
+    <xacro:include filename="wilson_core.xacro" />
+
+</robot>
