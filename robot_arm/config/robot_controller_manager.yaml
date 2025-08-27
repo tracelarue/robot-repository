@@ -1,7 +1,10 @@
 controller_manager:
   ros__parameters:
-    use_sim_time: true
-    update_rate: 100  # Hz
+    update_rate: 30
+    # use_sim_time: false
+
+    diff_drive_controller:
+      type: diff_drive_controller/DiffDriveController
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -12,14 +15,10 @@ controller_manager:
     gripper_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
-    diff_drive_controller:
-      type: diff_drive_controller/DiffDriveController
-
 
 
 arm_controller:
   ros__parameters:
-    use_sim_time: true
     joints:
       - joint_1
       - joint_2
@@ -41,7 +40,6 @@ arm_controller:
 
 gripper_controller:
   ros__parameters:
-    use_sim_time: true
     joints: 
       - gripper_left_finger_joint
       # gripper_right_finger_joint removed - it's now a mimic joint
@@ -58,7 +56,6 @@ gripper_controller:
 
 diff_drive_controller:
   ros__parameters:
-    use_sim_time: true
 
     publish_rate: 50.0
 
@@ -108,7 +105,3 @@ diff_drive_controller:
     # angular.z.min_acceleration: NAN
     # angular.z.max_jerk: NAN
     # angular.z.min_jerk: NAN
-
-joint_state_broadcaster:
-  ros__parameters:
-    use_sim_time: true

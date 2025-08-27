@@ -34,7 +34,7 @@ def generate_launch_description():
             'use_sim_time': 'false',
             'autostart': 'true',
             'params_file': os.path.join(get_package_share_directory(package_name), 'config', 'nav2_params.yaml'),
-            'map': os.path.join(get_package_share_directory(package_name), 'maps', 'downstairs_save.yaml')
+            'map': os.path.join(get_package_share_directory(package_name), 'maps', 'upstairs_map_save.yaml')
         }.items()
     )
 
@@ -51,5 +51,5 @@ def generate_launch_description():
         robot,
         nav2,
         localization,
-        gemini
+        #gemini
     ])
