@@ -58,5 +58,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path="/home/trace/robot/install/wilson/share/"/>
   </export>
 </package>

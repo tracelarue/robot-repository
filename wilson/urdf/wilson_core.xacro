@@ -4,14 +4,18 @@
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot xmlns:xacro="http://ros.org/wiki/xacro"
   name="wilson">
+
+  <link name = "base_link">
+  </link>
+
   <link
-    name="base_link">
+    name="body_link">
     <inertial>
       <origin
         xyz="0.07097 -0.00089885 0.11258"
         rpy="0 0 0" />
       <mass
-        value="7.2003" />
+        value="2" />
       <inertia
         ixx="0.017986"
         ixy="0.0006756"
@@ -19,6 +23,7 @@
         iyy="0.020129"
         iyz="-8.9186E-05"
         izz="0.026466" />
+
     </inertial>
     <visual>
       <origin
@@ -26,12 +31,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/base_link.STL" />
+          filename="package://wilson/meshes/body_link.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.79216 0.81961 0.93333 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -40,10 +45,23 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/base_link.STL" />
+          filename="package://wilson/collision_meshes/body_link.STL" />
       </geometry>
     </collision>
   </link>
+  <joint
+    name="body_joint"
+    type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="body_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
   <link
     name="laser_frame">
     <inertial>
@@ -71,7 +89,7 @@
       <material
         name="">
         <color
-          rgba="0.79216 0.81961 0.93333 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -80,7 +98,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/laser_frame.STL" />
+          filename="package://wilson/collision_meshes/laser_frame.STL" />
       </geometry>
     </collision>
   </link>
@@ -91,7 +109,7 @@
       xyz="0.028815 0.00026069 0.30272"
       rpy="0 0 0" />
     <parent
-      link="base_link" />
+      link="body_link" />
     <child
       link="laser_frame" />
     <axis
@@ -128,7 +146,7 @@
       <material
         name="">
         <color
-          rgba="0.25098 0.25098 0.25098 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -137,7 +155,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/camera_link.STL" />
+          filename="package://wilson/collision_meshes/camera_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -148,7 +166,7 @@
       xyz="0.10065 0.00016353 0.24572"
       rpy="0 0 0" />
     <parent
-      link="base_link" />
+      link="body_link" />
     <child
       link="camera_link" />
     <axis
@@ -181,7 +199,7 @@
       <material
         name="">
         <color
-          rgba="0.25098 0.25098 0.25098 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -190,7 +208,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/depth_camera_link.STL" />
+          filename="package://wilson/collision_meshes/depth_camera_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -201,7 +219,7 @@
       xyz="0.07765 0.038164 0.24572"
       rpy="0 0 0" />
     <parent
-      link="base_link" />
+      link="body_link" />
     <child
       link="depth_camera_link" />
     <axis
@@ -214,14 +232,14 @@
         xyz="0 0 0"
         rpy="0 0 0" />
       <mass
-        value="0" />
+        value="0.1" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="0.001"
+        ixy="0.001"
+        ixz="0.001"
+        iyy="0.001"
+        iyz="0.001"
+        izz="0.001" />
     </inertial>
     <visual>
       <origin
@@ -234,7 +252,7 @@
       <material
         name="">
         <color
-          rgba="1 1 1 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -243,7 +261,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/link_1.STL" />
+          filename="package://wilson/collision_meshes/link_1.STL" />
       </geometry>
     </collision>
   </link>
@@ -254,7 +272,7 @@
       xyz="0.20284 -0.0445 0.055968"
       rpy="0 0 0" />
     <parent
-      link="base_link" />
+      link="body_link" />
     <child
       link="link_1" />
     <axis
@@ -262,8 +280,8 @@
     <limit
       lower="-2.3562"
       upper="2.3562"
-      effort="0"
-      velocity="0" />
+      effort="100"
+      velocity="1.0" />
   </joint>
   <link
     name="link_2">
@@ -292,7 +310,7 @@
       <material
         name="">
         <color
-          rgba="0.79216 0.81961 0.93333 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -301,7 +319,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/link_2.STL" />
+          filename="package://wilson/collision_meshes/link_2.STL" />
       </geometry>
     </collision>
   </link>
@@ -316,12 +334,12 @@
     <child
       link="link_2" />
     <axis
-      xyz="0 0 -1" />
+      xyz="0 0 1" />
     <limit
       lower="-2.3562"
       upper="2.3562"
-      effort="0"
-      velocity="0" />
+      effort="100"
+      velocity="1.0" />
   </joint>
   <link
     name="link_3">
@@ -350,7 +368,7 @@
       <material
         name="">
         <color
-          rgba="0.79216 0.81961 0.93333 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -359,7 +377,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/link_3.STL" />
+          filename="package://wilson/collision_meshes/link_3.STL" />
       </geometry>
     </collision>
   </link>
@@ -374,12 +392,12 @@
     <child
       link="link_3" />
     <axis
-      xyz="0 0 -1" />
+      xyz="0 0 1" />
     <limit
       lower="-2.3562"
       upper="2.3562"
-      effort="0"
-      velocity="0" />
+      effort="100"
+      velocity="1.0" />
   </joint>
   <link
     name="link_4">
@@ -408,7 +426,7 @@
       <material
         name="">
         <color
-          rgba="0.79216 0.81961 0.93333 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -417,7 +435,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/link_4.STL" />
+          filename="package://wilson/collision_meshes/link_4.STL" />
       </geometry>
     </collision>
   </link>
@@ -432,12 +450,12 @@
     <child
       link="link_4" />
     <axis
-      xyz="0 0 -1" />
+      xyz="0 0 1" />
     <limit
       lower="-2.3562"
       upper="2.3562"
-      effort="0"
-      velocity="0" />
+      effort="100"
+      velocity="1.0" />
   </joint>
   <link
     name="gripper_base">
@@ -466,7 +484,7 @@
       <material
         name="">
         <color
-          rgba="0.25098 0.25098 0.25098 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -475,7 +493,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/gripper_base.STL" />
+          filename="package://wilson/collision_meshes/gripper_base.STL" />
       </geometry>
     </collision>
   </link>
@@ -519,7 +537,7 @@
       <material
         name="">
         <color
-          rgba="0.25098 0.25098 0.25098 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -528,7 +546,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/gripper_left_finger.STL" />
+          filename="package://wilson/collision_meshes/gripper_left_finger.STL" />
       </geometry>
     </collision>
   </link>
@@ -577,7 +595,7 @@
       <material
         name="">
         <color
-          rgba="0.25098 0.25098 0.25098 1" />
+          rgba="0.3 0.3 0.3 1" />
       </material>
     </visual>
     <collision>
@@ -586,7 +604,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://wilson/meshes/gripper_right_finger.STL" />
+          filename="package://wilson/collision_meshes/gripper_right_finger.STL" />
       </geometry>
     </collision>
   </link>
@@ -612,4 +630,5 @@
       multiplier="-1"
       offset="0" />
   </joint>
+
 </robot>

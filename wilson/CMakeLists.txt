@@ -13,6 +13,10 @@ find_package(hardware_interface REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+install(DIRECTORY collision_meshes
+  DESTINATION share/${PROJECT_NAME}
+)
+
 install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
@@ -25,15 +29,23 @@ install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(DIRECTORY maps
+  DESTINATION share/${PROJECT_NAME}
+)
+
 install(DIRECTORY meshes
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(DIRECTORY textures
+install(DIRECTORY ros2_control
   DESTINATION share/${PROJECT_NAME}
 )
 
 install(DIRECTORY urdf
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY worlds
   DESTINATION share/${PROJECT_NAME}
 )
 
