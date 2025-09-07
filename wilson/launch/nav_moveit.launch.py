@@ -13,7 +13,7 @@ def generate_launch_description():
 
     launch_dir = os.path.join(
         get_package_share_directory(
-            'robot_arm_moveit_config'), 'launch')
+            'wilson_moveit_config'), 'launch')
     
     # Declare launch arguments
     declare_use_sim_time = DeclareLaunchArgument(

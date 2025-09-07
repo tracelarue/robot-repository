@@ -48,13 +48,13 @@ void MTCTaskNode::setupPlanningScene() {
     object.header.frame_id = "world";
     object.primitives.resize(1);
     object.primitives[0].type = shape_msgs::msg::SolidPrimitive::CYLINDER;
-    object.primitives[0].dimensions = { 0.05, 0.02 };
+    object.primitives[0].dimensions = { 0.1, 0.02 };
 
     geometry_msgs::msg::Pose pose;
-    pose.position.x = 0.5;
+    pose.position.x = 0.43;
     pose.position.y = 0;
     // to put the object above surface we bring the half that is below ground to top.
-    pose.position.z = 0.5 * 0.05;
+    pose.position.z = 0.05;
     object.pose = pose;
 
     moveit::planning_interface::PlanningSceneInterface psi;
@@ -93,11 +93,11 @@ void MTCTaskNode::doTask() {
 
 mtc::Task MTCTaskNode::createTask() {
     mtc::Task task;
-    task.stages()->setName("chessaton demo task");
+    task.stages()->setName("wilson demo task");
     task.loadRobotModel(node_);
 
-    const auto& arm_group_name = "arm_group";
-    const auto& hand_group_name = "hand_group";
+    const auto& arm_group_name = "arm";
+    const auto& hand_group_name = "gripper";
     const auto& hand_frame = "end_effector_frame";
 
     // Set task properties
@@ -139,7 +139,7 @@ mtc::Task MTCTaskNode::createTask() {
         auto stage_open_hand =
             std::make_unique<mtc::stages::MoveTo>("open hand", interpolation_planner);
         stage_open_hand->setGroup(hand_group_name);
-        stage_open_hand->setGoal("hand_open");
+        stage_open_hand->setGoal("open");
         task.add(std::move(stage_open_hand));
     }
 
@@ -198,7 +198,7 @@ mtc::Task MTCTaskNode::createTask() {
             auto stage = std::make_unique<mtc::stages::GenerateGraspPose>("generate grasp pose");
             stage->properties().configureInitFrom(mtc::Stage::PARENT);
             stage->properties().set("marker_ns", "grasp_pose");
-            stage->setPreGraspPose("hand_open");
+            stage->setPreGraspPose("open");
             stage->setObject("object");
             stage->setAngleDelta(M_PI / 12);
             stage->setMonitoredStage(current_state_ptr);  // Hook into current state
@@ -211,7 +211,7 @@ mtc::Task MTCTaskNode::createTask() {
                                   Eigen::AngleAxisd(0, Eigen::Vector3d::UnitY()) *
                                   Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ());
             grasp_frame_transform.linear() = q.matrix();
-            grasp_frame_transform.translation().x() = 0.02;  // Small offset for grasp
+            grasp_frame_transform.translation().x() = 0.03;  // Small offset for grasp
             grasp_frame_transform.translation().y() = 0.0;
             grasp_frame_transform.translation().z() = 0.0;
 
@@ -244,7 +244,7 @@ mtc::Task MTCTaskNode::createTask() {
         {
             auto stage = std::make_unique<mtc::stages::MoveTo>("close hand", interpolation_planner);
             stage->setGroup(hand_group_name);
-            stage->setGoal("hand_close");
+            stage->setGoal("close");
             grasp->insert(std::move(stage));
         }
 

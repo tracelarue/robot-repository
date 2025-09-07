@@ -98,7 +98,7 @@
     <joint name="front_caster_wheel_joint" type="fixed">
         <parent link="body_link"/>
         <child link="front_caster_wheel"/>
-        <origin xyz=".18 0.0 -0.01"/>
+        <origin xyz=".21 0.0 -0.01"/>
     </joint>
     
     <link name="front_caster_wheel">
