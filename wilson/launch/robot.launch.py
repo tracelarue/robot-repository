@@ -17,7 +17,7 @@ def generate_launch_description():
 
     package_name='wilson' #<--- CHANGE ME
     robot_description = Command(['ros2 param get --hide-type /robot_state_publisher robot_description'])
-    controller_params_file = os.path.join(get_package_share_directory(package_name), 'config', 'gazebo_controller_manager.yaml')
+    controller_params_file = os.path.join(get_package_share_directory(package_name), 'config', 'robot_controller_manager.yaml')
 
     rsp = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
@@ -88,25 +88,13 @@ def generate_launch_description():
         )
     )
 
-    diff_drive_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["diff_drive_controller"],
-    )
-    delayed_diff_drive_spawner = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action=controller_manager,
-            on_start=[diff_drive_spawner],
-        )
-    )
-
 
     twist_mux_params = os.path.join(get_package_share_directory(package_name),'config','twist_mux.yaml')
     twist_mux = Node(
         package="twist_mux",
         executable="twist_mux",
         parameters=[twist_mux_params, {'use_sim_time': False}],
-        remappings=[('/cmd_vel_out','/diff_cont/cmd_vel_unstamped')]
+        remappings=[('/cmd_vel_out','/diff_drive_controller/cmd_vel_unstamped')]
     )
 
 
@@ -147,12 +135,12 @@ def generate_launch_description():
         rsp,
         delayed_controller_manager,
         delayed_diff_drive_spawner,
-        delayed_arm_controller_spawner,
-        delayed_gripper_controller_spawner,
+        #delayed_arm_controller_spawner,
+        #delayed_gripper_controller_spawner,
         delayed_joint_broad_spawner,
         twist_mux,
         ld19_launch,
-        tof_pointcloud,
-        v4l2_camera_node,
+        #tof_pointcloud,
+        #v4l2_camera_node,
 
     ])
