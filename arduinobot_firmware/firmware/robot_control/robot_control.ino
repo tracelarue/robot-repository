@@ -1,13 +1,13 @@
 #include <Servo.h>
 
 // Declare the Arduino pin where each servo is connected
-#define SERVO_BASE_PIN 8
-#define SERVO_SHOULDER_PIN 9
-#define SERVO_ELBOW_PIN 10
+#define SERVO_BASE_PIN 3
+#define SERVO_SHOULDER_PIN 5
+#define SERVO_ELBOW_PIN 6
 // ========== WRIST JOINT ADDITION START ==========
-#define SERVO_WRIST_PIN 12
+#define SERVO_WRIST_PIN 9
 // ========== WRIST JOINT ADDITION END ==========
-#define SERVO_GRIPPER_PIN 11
+#define SERVO_GRIPPER_PIN 10
 
 // Define the start configuration of the joints
 #define BASE_START 90
