@@ -40,15 +40,15 @@ def generate_launch_description():
         actions=[controller_manager],
     )
 
-    joint_broad_spawner = Node(
+    jointstate_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_broad"],
+        arguments=["joint_state_broadcaster"],
     )
-    delayed_joint_broad_spawner = RegisterEventHandler(
+    delayed_jointstate_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=controller_manager,
-            on_start=[joint_broad_spawner],
+            on_start=[jointstate_broadcaster_spawner],
         )
     )
 
@@ -135,11 +135,11 @@ def generate_launch_description():
         rsp,
         delayed_controller_manager,
         delayed_diff_drive_spawner,
-        #delayed_arm_controller_spawner,
-        #delayed_gripper_controller_spawner,
-        delayed_joint_broad_spawner,
+        delayed_arm_controller_spawner,
+        delayed_gripper_controller_spawner,
+        delayed_jointstate_broadcaster_spawner,
         twist_mux,
-        ld19_launch,
+        #ld19_launch,
         #tof_pointcloud,
         #v4l2_camera_node,
 

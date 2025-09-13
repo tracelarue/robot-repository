@@ -64,7 +64,6 @@ https://github.com/ros-controls/ros2_control_demos/blob/foxy/ros2_control_demo_d
     </ros2_control>
 
     <!-- Robot Arm Control System -->
-    <!--
     <ros2_control name="${name}_arm" type="system">
       <xacro:if value="${use_sim_time}">
         <hardware>
@@ -79,8 +78,13 @@ https://github.com/ros-controls/ros2_control_demos/blob/foxy/ros2_control_demo_d
         </xacro:if>
         <xacro:unless value="${use_fake_hardware}">
           <hardware>
-            <plugin>arduinobot_controller/ArduinobotInterface</plugin>
-            <param name="port">/dev/ttyUSB</param>
+            <plugin>ros2_control_demo_example_1/RRBotSystemPositionOnlyHardware</plugin>
+            <param name="device">/dev/ttyUSB1</param>
+            <param name="baud_rate">57600</param>
+            <param name="timeout_ms">1000</param>
+            <param name="example_param_hw_start_duration_sec">0</param>
+            <param name="example_param_hw_stop_duration_sec">3.0</param>
+            <param name="example_param_hw_slowdown">100</param>
           </hardware>
         </xacro:unless>
       </xacro:unless>
@@ -130,7 +134,6 @@ https://github.com/ros-controls/ros2_control_demos/blob/foxy/ros2_control_demo_d
           <param name="initial_value">0.0</param>
         </state_interface>
       </joint>
-      -->
       <!-- gripper_right_finger_joint is now a mimic joint, no control interfaces needed -->
       <!--
       <joint name="gripper_right_finger_joint">
@@ -172,9 +175,9 @@ https://github.com/ros-controls/ros2_control_demos/blob/foxy/ros2_control_demo_d
           <param name="initial_value">0.0</param>
         </state_interface>
       </joint>
-    
+      -->
     </ros2_control>
-    -->
+
   </xacro:macro>
 
 </robot>
