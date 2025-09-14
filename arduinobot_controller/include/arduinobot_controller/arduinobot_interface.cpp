@@ -1,6 +1,9 @@
 #include "arduinobot_controller/arduinobot_interface.hpp"
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <pluginlib/class_list_macros.hpp>
+#include <thread>
+#include <chrono>
+#include <sstream>
 
 
 namespace arduinobot_controller
@@ -59,9 +62,9 @@ CallbackReturn ArduinobotInterface::on_init(const hardware_interface::HardwareIn
     return CallbackReturn::FAILURE;
   }
 
-  position_commands_.reserve(info_.joints.size());
-  position_states_.reserve(info_.joints.size());
-  prev_position_commands_.reserve(info_.joints.size());
+  position_commands_.resize(info_.joints.size(), 0.0);
+  position_states_.resize(info_.joints.size(), 0.0);
+  prev_position_commands_.resize(info_.joints.size(), 0.0);
 
   return CallbackReturn::SUCCESS;
 }
@@ -101,11 +104,6 @@ CallbackReturn ArduinobotInterface::on_activate(const rclcpp_lifecycle::State &p
 {
   RCLCPP_INFO(rclcpp::get_logger("ArduinobotInterface"), "Starting robot hardware ...");
 
-  // Reset commands and states and set initial positions
-  position_commands_ = { 0.0, 0.0, -1.57, 0.0, 0.0 }; 
-  prev_position_commands_ = { 0.0, 0.0, -1.57, 0.0, 0.0 };
-  position_states_ = { 0.0, 0.0, -1.57, 0.0, 0.0 };
-
   try
   {
     arduino_.Open(port_);
@@ -117,6 +115,75 @@ CallbackReturn ArduinobotInterface::on_activate(const rclcpp_lifecycle::State &p
                         "Something went wrong while interacting with port " << port_);
     return CallbackReturn::FAILURE;
   }
+
+  // Read current servo positions from Arduino
+  try 
+  {
+    // Send position query
+    arduino_.Write("?,");
+    
+    // Wait a bit for Arduino to respond
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    // Read response
+    std::string response;
+    arduino_.ReadLine(response, '\n', 1000);
+    
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("ArduinobotInterface"), "Arduino response: " << response);
+    
+    // Parse comma-separated values: base,shoulder,elbow,wrist,gripper
+    std::vector<int> servo_angles;
+    std::stringstream ss(response);
+    std::string angle_str;
+    
+    while (std::getline(ss, angle_str, ',') && servo_angles.size() < 5) {
+      servo_angles.push_back(std::stoi(angle_str));
+    }
+    
+    if (servo_angles.size() >= 5) {
+      // Convert servo angles back to radians using inverse of our conversion formula
+      // Formula: radians = (degrees / (180/π)) - 3π/4
+      double current_positions[5];
+      current_positions[0] = (servo_angles[0] * M_PI / 180.0) - (3.0 * M_PI / 4.0);  // base
+      current_positions[1] = (servo_angles[1] * M_PI / 180.0) - (3.0 * M_PI / 4.0);  // shoulder  
+      current_positions[2] = (servo_angles[2] * M_PI / 180.0) - (3.0 * M_PI / 4.0);  // elbow
+      current_positions[3] = (servo_angles[3] * M_PI / 180.0) - (3.0 * M_PI / 4.0);  // wrist
+      current_positions[4] = servo_angles[4] / 4400.0;  // gripper: degrees to radians
+      
+      // Initialize both states and commands to current positions
+      position_states_.resize(5);
+      position_commands_.resize(5);
+      for (int i = 0; i < 5; i++) {
+        position_states_[i] = current_positions[i];
+        position_commands_[i] = current_positions[i];
+      }
+      
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("ArduinobotInterface"), 
+                         "Read servo positions: " << servo_angles[0] << "°," << servo_angles[1] << "°," 
+                         << servo_angles[2] << "°," << servo_angles[3] << "°," << servo_angles[4] << "°");
+    } else {
+      RCLCPP_WARN(rclcpp::get_logger("ArduinobotInterface"), "Could not read servo positions, using defaults");
+      position_states_.resize(5);
+      position_commands_.resize(5);
+      for (int i = 0; i < 5; i++) {
+        position_states_[i] = 0.0;
+        position_commands_[i] = 0.0;
+      }
+    }
+  }
+  catch (...)
+  {
+    RCLCPP_WARN(rclcpp::get_logger("ArduinobotInterface"), "Failed to read initial positions, using defaults");
+    position_states_.resize(5);
+    position_commands_.resize(5);
+    for (int i = 0; i < 5; i++) {
+      position_states_[i] = 0.0;
+      position_commands_[i] = 0.0;
+    }
+  }
+
+  // Initialize previous commands to match current commands
+  prev_position_commands_ = position_commands_;
 
   RCLCPP_INFO(rclcpp::get_logger("ArduinobotInterface"),
               "Hardware started, ready to take commands");
@@ -160,14 +227,6 @@ hardware_interface::return_type ArduinobotInterface::write(const rclcpp::Time &t
   if (position_commands_ == prev_position_commands_)
   {
     // Nothing changed, do not send any command
-    return hardware_interface::return_type::OK;
-  }
-
-  // Skip sending commands on first activation to prevent servo jump
-  static bool first_activation = true;
-  if (first_activation) {
-    first_activation = false;
-    prev_position_commands_ = position_commands_;
     return hardware_interface::return_type::OK;
   }
 
