@@ -41,22 +41,16 @@ def generate_launch_description():
         }.items()
     )
 
-    gemini = Node(
-        package='gemini',
-        executable='multimodal',
-        name='gemini_multimodal',
-        output='screen',
-        arguments=['--mode', 'sim'],  # Changed: removed extra --ros-args
-        parameters=[{'use_sim_time': True}],
-        emulate_tty=True
+    gemini = ExecuteProcess(
+        cmd=['tilix', '-e', 'ros2', 'run', 'gemini', 'multimodal', '--mode', 'sim'],
+        output='screen'
     )
-
 
     return LaunchDescription([
         SetEnvironmentVariable('QT_AUTO_SCREEN_SCALE_FACTOR', '0'),
         SetEnvironmentVariable('QT_SCALE_FACTOR', '1'),
         sim,
-        nav2,
-        localization,
-        #gemini,
+        #nav2,
+        #localization,
+        gemini
     ])
