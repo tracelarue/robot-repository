@@ -70,7 +70,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 
 # API configuration
 GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
-MODEL = "models/gemini-2.0-flash-live-001"
+MODEL = "models/gemini-2.5-flash-live-preview"
 DEFAULT_MODE = "none"
 
 client = genai.Client(
