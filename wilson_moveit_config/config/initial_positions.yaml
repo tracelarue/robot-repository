@@ -1,9 +1,10 @@
 # Default initial positions for wilson's ros2_control fake system
+# These match the "idle" state from wilson.srdf
 
 initial_positions:
   gripper_left_finger_joint: 0
   gripper_right_finger_joint: 0
   joint_1: 0
-  joint_2: 0
-  joint_3: 0
-  joint_4: 0
+  joint_2: 0.2495
+  joint_3: -2.3562
+  joint_4: -0.6098
