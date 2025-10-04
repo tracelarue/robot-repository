@@ -38,7 +38,7 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d', '/robot/robot.rviz', '--ros-args', '--log-level', 'WARN'],
+        arguments=['-d', '/home/trace/robot/src/robot-repository/sim.rviz', '--ros-args', '--log-level', 'WARN'],
         parameters=[{'use_sim_time': use_sim_time}],
     )
     

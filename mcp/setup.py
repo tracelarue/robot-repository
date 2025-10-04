@@ -1,8 +1,6 @@
 from setuptools import find_packages, setup
-import os
-from glob import glob
 
-package_name = 'gemini'
+package_name = 'mcp'
 
 setup(
     name=package_name,
@@ -12,7 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
+        ('share/' + package_name + '/launch', ['launch/turtlesim_ros_mcp.launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -23,8 +21,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'gemini_node = gemini.MultiModal_image_as_tool:main',
-            'multimodal_robot = gemini.MultiModal_robot:main'
         ],
     },
 )
